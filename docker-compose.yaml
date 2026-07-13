@@ -19,6 +19,9 @@ services:
       - CUDA_VISIBLE_DEVICES=0
       # DGX Spark 필수: cute-DSL sm_121a (이것 없으면 2배 느림!)
       - CUTE_DSL_ARCH=sm_121a
+      # FlashInfer 어텐션 커널이 sm_121a에서 최초 forward 시 segfault를 일으켜
+      # Triton 어텐션 백엔드로 대체(로그가 제시한 대체재). 원인 격리/우회용.
+      - VLLM_ATTENTION_BACKEND=TRITON_ATTN
     volumes:
       # HuggingFace 모델 캐시 (마운트해서 다운로드 1회만)
       - hf-cache:/root/.cache/huggingface
