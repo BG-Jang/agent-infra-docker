@@ -4,6 +4,9 @@ services:
   # ── GPU Inference Container (vLLM + Unsloth NVFP4) ────────────────────
   # DGX Spark: 128GB unified memory → 컨테이너가 110GB 사용 가능
   # Hermes는 호스트(OS)에서 실행 → 18GB 여유
+  # 공식 실행 명령: vllm serve unsloth/Qwen3.6-27B-NVFP4 \
+  #               --moe-backend flashinfer_b12x \
+  #               --speculative-config '{"method": "mtp", "num_speculative_tokens": 2}'
   inference:
     build:
       context: .
@@ -16,12 +19,11 @@ services:
       - CUDA_VISIBLE_DEVICES=0
       # DGX Spark 필수: cute-DSL sm_121a (이것 없으면 2배 느림!)
       - CUTE_DSL_ARCH=sm_121a
-      # MTP Multi-Token Prediction 추론
+      # MTP Multi-Token Prediction 추론 활성화
       - VLLM_USE_MIRROR_DECODE=1
     volumes:
       # HuggingFace 모델 캐시 (마운트해서 다운로드 1회만)
       - hf-cache:/root/.cache/huggingface
-      # vLLM 실행 시 모델 지정: --model unsloth/Qwen3.6-27B-NVFP4
     ports:
       - "8000:8000"
     deploy:
@@ -40,6 +42,21 @@ services:
     # 128GB unified memory: 컨테이너 110GB (Hermes용 18GB 여유)
     mem_limit: 110g
     memswap_limit: 110g
+    # 공식 실행 명령과 완전히 일치
+    command:
+      - python3
+      - -m
+      - vllm.entrypoints.openai.api_server
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+      - --model
+      - unsloth/Qwen3.6-27B-NVFP4
+      - --moe-backend
+      - flashinfer_b12x
+      - --speculative-config
+      - '{"method": "mtp", "num_speculative_tokens": 2}'
 
 volumes:
   hf-cache:
