@@ -60,6 +60,11 @@ services:
       # 부팅 시 free 메모리를 초과해 실패함. 호스트(Hermes 18GB) 여유를 두고 0.85로.
       - --gpu-memory-utilization
       - "0.85"
+      # 텍스트 전용 서빙(Hermes 에이전트 용도). 비전 인코더 프로파일링이
+      # ARM64/sm_121a에서 segfault를 일으키므로 이미지/영상 입력을 비활성화해 우회.
+      # (멀티모달이 필요하면 아래 두 값을 1 이상으로 올리고 vision 경로를 별도 검증)
+      - --limit-mm-per-prompt
+      - '{"image": 0, "video": 0}'
 
 volumes:
   hf-cache:
