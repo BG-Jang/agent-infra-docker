@@ -2,7 +2,7 @@
 
 > **DGX Spark의 128GB unified memory를 활용한 LLM 추론 전용 컨테이너**
 > Hermes Agent는 호스트(OS)에서 실행하고, 추론만 컨테이너로 분리
-> 엔진: vLLM 0.8.5 + cute-DSL + flashinfer_trtllm
+> 엔진: vLLM 0.25.0+ + cute-DSL + flashinfer_b12x
 
 ## 아키텍처
 
@@ -38,7 +38,7 @@
 
 | 항목 | 공식 | 우리 설정 | 상태 |
 |---|---|---|---|
-| **엔진** | vLLM 0.8.5+ | vLLM 0.8.5 | ✅ |
+| **엔진** | vLLM 0.25.0+ | vLLM 0.25.0+ | ✅ |
 | **Backend** | cute-DSL / CUTLASS | `CUTE_DSL_ARCH=sm_121a` | ✅ |
 | **GPU 아키텍처** | `sm_121a` (GB10) | Dockerfile ENV | ✅ |
 | **MTP 추론** | `--speculative-config '{"method": "mtp", "num_speculative_tokens": 2}'` | docker-compose에서 명시 | ✅ |
@@ -76,14 +76,19 @@ bash scripts/start.sh
 
 ## 모델 선택
 
+> unsloth/Qwen3.6-27B-NVFP4는 멀티모달 모델입니다 (텍스트/이미지/영상 입력 지원).
+> 기본(native) 컨텍스트는 262,144 토큰이며, YaRN 적용 시 최대 1,010,000 토큰까지 확장 가능합니다.
+
 ### supported 모델
 
-| 모델 | 양자화 | 필요 VRAM | 컨테이너 메모리 | 가능 |
+| 모델 | 양자화 | 필요 VRAM | 작업 메모리(추정) | 가능 |
 |---|---|---|---|---|
 | **Qwen3.6-27B** | NVFP4 | ~12GB | 14GB | ✅ 완벽 |
 | **Qwen3.6-27B** | BF16 | ~54GB | 60GB | ✅ 완벽 |
 | **Qwen3.6-35B-A3B** | NVFP4 | ~14GB | 14GB | ✅ 완벽 |
 | **Qwen3.6-35B-A3B** | BF16 | ~70GB | 72GB | ✅ 완벽 |
+
+> 위 "작업 메모리(추정)" 값은 모델별 실사용 추정치이며, 컨테이너 전체 상한(`mem_limit`)인 110GB와는 별개입니다.
 
 ## 성능 벤치마크 (공식)
 
