@@ -56,6 +56,10 @@ services:
       - flashinfer_b12x
       - --speculative-config
       - '{"method": "mtp", "num_speculative_tokens": 2}'
+      # unified memory(총 ~122GiB)는 호스트/OS와 공유하므로 기본값 0.92는
+      # 부팅 시 free 메모리를 초과해 실패함. 호스트(Hermes 18GB) 여유를 두고 0.85로.
+      - --gpu-memory-utilization
+      - "0.85"
 
 volumes:
   hf-cache:
