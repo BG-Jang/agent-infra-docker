@@ -65,6 +65,11 @@ services:
       # (멀티모달이 필요하면 아래 두 값을 1 이상으로 올리고 vision 경로를 별도 검증)
       - --limit-mm-per-prompt
       - '{"image": 0, "video": 0}'
+      # torch.compile(inductor) 그래프 컴파일이 ARM64/sm_121a에서 segfault를 일으켜
+      # eager 모드로 우회(inductor 융합·CUDA graph 비활성). 성능의 핵심인
+      # cute-DSL/flashinfer_b12x MoE 커널은 런타임 커스텀 커널이라 eager에서도 동작함.
+      # (툴체인 성숙 후 이 플래그를 제거해 torch.compile 재활성 시도 가능)
+      - --enforce-eager
 
 volumes:
   hf-cache:
