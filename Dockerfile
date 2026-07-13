@@ -15,9 +15,12 @@ ENV PYTHONUNBUFFERED=1
 # ── 의존성 ─────────────────────────────────────────────────────────────
 # 공식 카드는 python 3.13 venv를 사용하나, ubuntu22.04 apt에서 3.13이 기본
 # 제공되지 않아 python3.11로 유지 (venv 생성 라인과 버전 일치시킬 것)
+# ffmpeg: torchcodec(vllm 멀티모달 영상 디코딩)이 런타임에 libav*.so 를 dlopen 함.
+#         이게 없으면 'libavutil.so.58: cannot open shared object file'로 기동 실패.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.11 python3.11-venv python3.11-dev \
     libgl1-mesa-glx libglib2.0-0 \
+    ffmpeg \
     curl wget git ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
