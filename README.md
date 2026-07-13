@@ -78,6 +78,11 @@ bash scripts/start.sh
 
 > unsloth/Qwen3.6-27B-NVFP4는 멀티모달 모델입니다 (텍스트/이미지/영상 입력 지원).
 > 기본(native) 컨텍스트는 262,144 토큰이며, YaRN 적용 시 최대 1,010,000 토큰까지 확장 가능합니다.
+>
+> ⚠️ 본 컨테이너는 **텍스트 전용**으로 서빙합니다. ARM64/sm_121a 환경에서 비전 인코더
+> 프로파일링 시 segfault가 발생해, `docker-compose.yaml`에서
+> `--limit-mm-per-prompt '{"image": 0, "video": 0}'`로 이미지/영상 입력을 비활성화했습니다.
+> 멀티모달이 필요하면 해당 값을 올리고 vision 경로를 별도 검증하세요.
 
 ### supported 모델
 
