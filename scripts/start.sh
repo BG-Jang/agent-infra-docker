@@ -9,7 +9,7 @@ cd "$PROJECT_ROOT"
 
 echo "🚀 DGX Spark vLLM Inference Container 시작..."
 echo "   GPU: NVIDIA GB10 (ARM64 sm_121a)"
-echo "   엔진: vLLM 0.8.5 + cute-DSL + flashinfer_b12x"
+echo "   엔진: vLLM 0.25.0+ + cute-DSL + flashinfer_b12x"
 echo "   모델: unsloth/Qwen3.6-27B-NVFP4 (NVFP4 양자화)"
 echo "   API: OpenAI 호환 (:8000)"
 echo "   MTP: Multi-Token Prediction (num_speculative_tokens=2)"
