@@ -5,7 +5,9 @@
 
 # GB10(Blackwell, sm_121a)은 CUDA 12.8+ 필요. cudnn 포함 devel/arm64 태그 사용.
 # ('12.5.0-cudnn8-...'은 존재하지 않는 태그 — 12.4부터 cudnn8→cudnn, 12.5엔 cudnn 변형 없음)
-FROM --platform=linux/arm64 nvidia/cuda:12.8.1-cudnn-devel-ubuntu22.04
+# CUDA 13.0 채택: vllm 0.25.0가 torchcodec>=0.14를 요구하는데 해당 aarch64 휠은
+# pytorch cu130 인덱스에만 존재(cu128/cu129는 0.11.1까지) → 아래 torch-backend와 정합.
+FROM --platform=linux/arm64 nvidia/cuda:13.0.3-cudnn-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -30,14 +32,15 @@ ENV PATH="/opt/venv/bin:$PATH"
 ENV CUTE_DSL_ARCH=sm_121a
 
 # uv로 설치. 빌드 타임엔 GPU/드라이버가 없어 --torch-backend=auto 감지가
-# 실패할 수 있으므로 베이스 CUDA(12.8)와 일치하는 cu128로 고정 (결정적 빌드).
+# 실패할 수 있으므로 베이스 CUDA(13.0)와 일치하는 cu130으로 고정 (결정적 빌드).
+# (cu130 인덱스에 torchcodec 0.14 aarch64 휠 존재 → vllm 0.25.0 의존성 충족)
 RUN pip install --no-cache-dir uv
 
 RUN uv pip install --python /opt/venv/bin/python \
     "vllm>=0.25.0" \
     "flashinfer-python>=0.6.13" \
     "nvidia-cutlass-dsl>=4.5.2" \
-    --torch-backend=cu128
+    --torch-backend=cu130
 
 # ── 작업 디렉토리 ──────────────────────────────────────────────────────
 WORKDIR /workspace
