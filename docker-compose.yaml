@@ -1,9 +1,9 @@
 version: "3.9"
 
 services:
-  # ── GPU Inference Container (llama.cpp) ────────────────────────────────
-  # DGX Spark: 128GB unified memory → 컨테이너가 100GB 사용 가능
-  # Hermes는 호스트(OS)에서 실행 → 28GB 여유
+  # ── GPU Inference Container (vLLM + Unsloth NVFP4) ────────────────────
+  # DGX Spark: 128GB unified memory → 컨테이너가 110GB 사용 가능
+  # Hermes는 호스트(OS)에서 실행 → 18GB 여유
   inference:
     build:
       context: .
@@ -14,14 +14,14 @@ services:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=compute,utility
       - CUDA_VISIBLE_DEVICES=0
-      # llama.cpp 파라미터 (128GB unified memory 활용)
-      - NGPU_LAYERS=99  # 모든 레이어 GPU에 로드
-      - CONTEXT_SIZE=131072  # 128K 컨텍스트
-      - BATCH_SIZE=32768
-      - MEM_FRAC=0.95  # 95% 메모리 사용
+      # DGX Spark 필수: cute-DSL sm_121a (이것 없으면 2배 느림!)
+      - CUTE_DSL_ARCH=sm_121a
+      # MTP Multi-Token Prediction 추론
+      - VLLM_USE_MIRROR_DECODE=1
     volumes:
-      - ./models:/workspace/models:ro
+      # HuggingFace 모델 캐시 (마운트해서 다운로드 1회만)
       - hf-cache:/root/.cache/huggingface
+      # vLLM 실행 시 모델 지정: --model unsloth/Qwen3.6-27B-NVFP4
     ports:
       - "8000:8000"
     deploy:
@@ -35,7 +35,7 @@ services:
       test: ["CMD", "/workspace/healthcheck.sh"]
       interval: 30s
       timeout: 10s
-      start_period: 5m
+      start_period: 10m  # 모델 다운로드/컴파일에 최대 10분
       retries: 3
     # 128GB unified memory: 컨테이너 110GB (Hermes용 18GB 여유)
     mem_limit: 110g
